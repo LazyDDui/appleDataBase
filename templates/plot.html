@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Plot</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #plotly-chart {
+            width: 100%;
+            height: 980px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <label for="symbol">Symbol:</label>
+        <input type="text" id="symbol" name="symbol" value="105.AAPL">
+        <label for="interval">Interval:</label>
+        <select id="interval" name="interval">
+            <option value="daily" selected>Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select>
+        <button onclick="updatePlot()">Update Plot</button>
+    </div>
+    <div id="plot"></div>
+
+    <script>
+        function updatePlot() {
+            var symbol = document.getElementById('symbol').value;
+            var interval = document.getElementById('interval').value;
+            $.ajax({
+                url: '/create_plot',
+                type: 'GET',
+                data: {
+                    symbol: symbol,
+                    interval: interval
+                },
+                success: function(data) {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        var plotData = JSON.parse(data);
+                        Plotly.newPlot('plot', plotData.data, plotData.layout);
+                    }
+                },
+                error: function(error) {
+                    console.log('Error:', error);
+                }
+            });
+        }
+
+        function autoUpdatePlot() {
+            updatePlot();
+            setInterval(updatePlot, 1000); // 每隔10秒更新一次图表
+        }
+
+        // Initial plot load
+        $(document).ready(function() {
+            autoUpdatePlot();
+        });
+    </script>
+</body>
+</html>
